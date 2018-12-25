@@ -60,7 +60,7 @@ def finn_forventet_levealder():
 # Driftsresultat i prosent
 def finn_driftsresultat():
     driftsresultat = soup.find('', id="okonomi").p.next_element
-    return [driftsresultat]
+    return [driftsresultat]     # Returnerer feil for tre kommuner. Fiks en eller annen gang.
 
 
 # Finansielle nøkkeltall
@@ -71,29 +71,30 @@ def finn_finansielle_nokkeltall():
     return [laanegjeld_per_innbygger, driftsinntekter_per_innbygger, driftsutgifter_per_innbygger]
 
 
-
+# Navn på alle kollonene til csv filen
 tall_navn = ["Kommune", "Folketall", "Utdanning - Grunnskole", "Utdanning - Videregående", "Utdanning - Universitet (Kort)",
  "Utdanning - Universitet (Lang)", "Utdanning - Ingen", "Medlem i Den Norske Kirke", "Annet livssyn", "Forventet levealder (Mann)", 
  "Forventet levealder (Kvinne)", "Driftsresultat i prosent", "Lånegjeld per innbygger", "Driftsinntekter per innbygger", "Driftsutgifter per innbygger"]
+# Har en liste med alle funksjonene som skal kjøres, slik at try/except kan enkelt brukes i en for-loop
 funksjoner = [finn_folketall, finn_utdanningsnivaa, finn_religion, finn_forventet_levealder, finn_driftsresultat, finn_finansielle_nokkeltall]
 
-kommuner = hent_kommuner()
-rows_list = []
+kommuner = hent_kommuner() # Lager en liste av alle kommunene i Norge, hentet fra SSB.
+rows_list = [] # Liste der hvert element er en rad i den ferdige csv-fiilen. En rad er alle tall for en kommune..
 
-for kommune in kommuner:
-    tall = [kommune]
-    url = velg_kommune(kommune)
+for kommune in kommuner: # Går gjennom listen av alle kommunene
+    tall = [kommune] # Lagrer første element som navnet på kommunen
+    url = velg_kommune(kommune) # Endrer url til den foreløpig valgte kommunen
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    for func in funksjoner:
+    for func in funksjoner: # For-loop som passer på at det lagres "N/A" dersom tallene ikke eksisterer for enkelte kommuner
         try:
             tall += func()
         except:
             tall += ["N/A"]
-    rows_list.append(tall)
+    rows_list.append(tall) # Appender navn på kommunen og alle dens tall
     print(tall)
 
-dfKommune = pandas.DataFrame(data = rows_list, columns = tall_navn)
+dfKommune = pandas.DataFrame(data = rows_list, columns = tall_navn) # Lager en csv-fil med all info som har blitt samlet inn
 #print(dfKommune)
 
 dfKommune.to_csv('kommunedata_SSB.csv')
