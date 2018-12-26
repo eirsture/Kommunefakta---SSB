@@ -41,6 +41,10 @@ def finn_utdanningsnivaa():
     utdanning = dict(zip(utdanning_navn,utdanning_tall))
     return utdanning_tall
 
+# Bøker lånt årlig fra bibliotek
+def finn_laanebok():
+    laanebok = soup.find('', id="kommunefaktatall-317464").span.previous_element
+    return [laanebok]
 
 # Finne religion/livssyn i prosentandel
 def finn_religion():
@@ -71,15 +75,18 @@ def finn_finansielle_nokkeltall():
     return [laanegjeld_per_innbygger, driftsinntekter_per_innbygger, driftsutgifter_per_innbygger]
 
 
+
 # Navn på alle kollonene til csv filen
 tall_navn = ["Kommune", "Folketall", "Utdanning - Grunnskole", "Utdanning - Videregående", "Utdanning - Universitet (Kort)",
- "Utdanning - Universitet (Lang)", "Utdanning - Ingen", "Medlem i Den Norske Kirke", "Annet livssyn", "Forventet levealder (Mann)", 
+ "Utdanning - Universitet (Lang)", "Utdanning - Ingen", "Bøker lånt årlig","Medlem i Den Norske Kirke", "Annet livssyn", "Forventet levealder (Mann)", 
  "Forventet levealder (Kvinne)", "Driftsresultat i prosent", "Lånegjeld per innbygger", "Driftsinntekter per innbygger", "Driftsutgifter per innbygger"]
 # Har en liste med alle funksjonene som skal kjøres, slik at try/except kan enkelt brukes i en for-loop
-funksjoner = [finn_folketall, finn_utdanningsnivaa, finn_religion, finn_forventet_levealder, finn_driftsresultat, finn_finansielle_nokkeltall]
+funksjoner = [finn_folketall, finn_utdanningsnivaa, finn_laanebok, finn_religion, finn_forventet_levealder, finn_driftsresultat, finn_finansielle_nokkeltall]
 
 kommuner = hent_kommuner() # Lager en liste av alle kommunene i Norge, hentet fra SSB.
 rows_list = [] # Liste der hvert element er en rad i den ferdige csv-fiilen. En rad er alle tall for en kommune..
+
+#a=0 # Kan brukes til å prøvekjøre programmet for et par kommuner
 
 for kommune in kommuner: # Går gjennom listen av alle kommunene
     tall = [kommune] # Lagrer første element som navnet på kommunen
@@ -93,6 +100,9 @@ for kommune in kommuner: # Går gjennom listen av alle kommunene
             tall += ["N/A"]
     rows_list.append(tall) # Appender navn på kommunen og alle dens tall
     print(tall)
+    
+    #a +=1 # Kan brukes til å prøvekjøre programmet for et par kommuner 
+    #if a==10: break 
 
 dfKommune = pandas.DataFrame(data = rows_list, columns = tall_navn) # Lager en csv-fil med all info som har blitt samlet inn
 #print(dfKommune)
